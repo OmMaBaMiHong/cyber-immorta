@@ -1,0 +1,35 @@
+{
+  "name": "distill-human-web",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "qa:local": "node scripts/local-e2e.mjs",
+    "prepare:rebirth-art": "node scripts/build-sbti-rebirth-assets.mjs"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "@vueuse/core": "^13.4.0",
+    "axios": "^1.9.0",
+    "jsqr": "^1.4.0",
+    "pinia": "^3.0.3",
+    "qrcode": "^1.5.4",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "autoprefixer": "^10.4.21",
+    "playwright": "^1.59.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.3",
+    "vue-tsc": "^2.2.10"
+  }
+}
