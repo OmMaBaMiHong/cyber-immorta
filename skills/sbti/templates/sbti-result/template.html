@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的 SBTI 人格：【{{PERSONALITY_CODE}}】{{PERSONALITY_NAME}}</title>
+  <meta name="description" content="{{OPENING_LINE}} — 匹配度 {{MATCH_PERCENT}}%。30 题 × 15 维度 × 27 种赛博人格，来测测你的！" />
+  <meta property="og:title" content="我的 SBTI 赛博人格：【{{PERSONALITY_CODE}}】{{PERSONALITY_NAME}}" />
+  <meta property="og:description" content="{{OPENING_LINE}} — 匹配度 {{MATCH_PERCENT}}%" />
+  <meta property="og:image" content="data:image/webp;base64,{{AVATAR_BASE64}}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6faf6;
+      --surface: #ffffff;
+      --surface-2: #f2f7f3;
+      --border: #dbe8dd;
+      --text: #1e2a22;
+      --text-2: #3a4a3e;
+      --text-3: #6a786f;
+      --text-4: #9aa69e;
+      --accent: #4d6a53;
+      --accent-light: #8fb896;
+      --accent-bg: #edf6ef;
+      --bar-track: #edf6ef;
+      --green: #10b981;
+      --green-text: #047857;
+      --amber: #fbbf24;
+      --amber-text: #d97706;
+      --red: #f87171;
+      --red-text: #ef4444;
+      --font: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--surface);
+      min-height: 100vh;
+      box-shadow: 0 0 60px rgba(47, 73, 55, 0.08);
+    }
+
+    /* ── Avatar Section ── */
+    .avatar-section {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 50%);
+    }
+    .avatar-info {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .avatar-code {
+      font-size: 32px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      letter-spacing: -0.5px;
+    }
+    .avatar-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .match-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 5px 14px;
+    }
+
+    /* ── Content Section ── */
+    .content {
+      padding: 24px 20px 32px;
+    }
+
+    .quote {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--accent);
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    .description {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.9;
+      margin-bottom: 24px;
+    }
+
+    /* ── Summary Strip ── */
+    .summary-strip {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      padding: 16px 0;
+      margin-bottom: 20px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .summary-bars {
+      display: flex;
+      gap: 1px;
+      align-items: flex-end;
+    }
+    .summary-bar {
+      width: 10px;
+      border-radius: 2px;
+    }
+    .summary-bar.h { height: 14px; background: var(--green); }
+    .summary-bar.m { height: 9px; background: var(--amber); }
+    .summary-bar.l { height: 4px; background: var(--red); }
+    .summary-label {
+      font-size: 10px;
+      color: var(--text-4);
+    }
+
+    /* ── Radar Section ── */
+    .radar-section {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .radar-container {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0 12px;
+    }
+    #radarChart {
+      width: 280px;
+      height: 260px;
+    }
+    .rarity-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .rarity-badge {
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .rarity-badge.ssr {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #78350f;
+    }
+    .rarity-badge.sr {
+      background: linear-gradient(135deg, #c084fc, #a855f7);
+      color: #fff;
+    }
+    .rarity-badge.r {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      color: #fff;
+    }
+    .rarity-badge.n {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+    .rarity-info {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    /* ── Dimension Section ── */
+    .model-group {
+      margin-bottom: 16px;
+    }
+    .model-group:last-child { margin-bottom: 0; }
+    .model-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+    .dim-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .dim-label {
+      font-size: 12px;
+      color: var(--text-3);
+      width: 72px;
+      flex-shrink: 0;
+    }
+    .dim-track {
+      flex: 1;
+      height: 8px;
+      background: var(--bar-track);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .dim-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+    .dim-fill.h { width: 100%; background: var(--green); }
+    .dim-fill.m { width: 60%; background: var(--amber); }
+    .dim-fill.l { width: 25%; background: var(--red); }
+    .dim-level {
+      font-size: 11px;
+      font-weight: 600;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .dim-level.h { color: var(--green-text); }
+    .dim-level.m { color: var(--amber-text); }
+    .dim-level.l { color: var(--red-text); }
+
+    /* ── TOP 3 Section ── */
+    .top-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .top-list {
+      list-style: none;
+    }
+    .top-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .top-item.current {
+      background: var(--accent-bg);
+    }
+    .top-rank {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .top-rank.r1 { background: var(--accent); color: #fff; }
+    .top-rank.r2 { background: var(--accent-bg); color: var(--accent); }
+    .top-rank.r3 { background: var(--accent-bg); color: var(--accent); }
+    .top-info {
+      flex: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .top-code {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .top-name {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .top-pct {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* ── Guide Section ── */
+    .guide-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .guide-card {
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .guide-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .guide-desc {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .guide-steps {
+      list-style: none;
+    }
+    .guide-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 0;
+    }
+    .guide-step + .guide-step {
+      border-top: 1px solid var(--border);
+    }
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content {
+      flex: 1;
+    }
+    .step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .step-hint {
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.5;
+    }
+    .step-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .step-link:hover { opacity: 0.85; }
+    .step-link.outline {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    .step-code {
+      display: block;
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text-2);
+      word-break: break-all;
+      line-height: 1.5;
+      cursor: pointer;
+      position: relative;
+    }
+    .step-code:active { background: var(--accent-bg); }
+
+    /* ── CTA ── */
+    .cta {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .share-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .share-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .share-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 24px 20px;
+      font-size: 12px;
+      color: var(--text-4);
+      border-top: 1px solid var(--border);
+      margin-top: 32px;
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    @media (max-width: 420px) {
+      .page { max-width: 100%; }
+      .avatar-code { font-size: 26px; }
+      .dim-label { width: 64px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══ AVATAR HERO ═══ -->
+  <div class="avatar-section">
+    <img class="avatar-img" src="data:image/webp;base64,{{AVATAR_BASE64}}" alt="{{PERSONALITY_CODE}}（{{PERSONALITY_NAME}}）" />
+    <div class="avatar-overlay"></div>
+    <div class="avatar-info">
+      <span class="avatar-code">{{PERSONALITY_CODE}}</span>
+      <span class="avatar-name">{{PERSONALITY_NAME}}</span>
+    </div>
+    <div class="match-badge">匹配度 {{MATCH_PERCENT}}%</div>
+  </div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content">
+
+    <p class="quote">"{{OPENING_LINE}}"</p>
+    <p class="description">{{DESCRIPTION}}</p>
+
+    <!-- ── Radar Chart ── -->
+    <div class="radar-section">
+      <div class="section-title">📊 五维雷达</div>
+      <div class="radar-container">
+        <svg id="radarChart" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="rarity-row">
+        <span class="rarity-badge {{RARITY_CLASS}}">{{RARITY_TIER}}</span>
+        <span class="rarity-info">{{RARITY_LABEL}} · 人群占比 {{RARITY_PCT}}%</span>
+      </div>
+    </div>
+
+    <!-- ── Summary Strip ── -->
+    <div class="summary-strip">
+      <div class="summary-group">
+        <div class="summary-bars">
+          <div class="summary-bar {{S1_CLASS}}"></div>
+          <div class="summary-bar {{S2_CLASS}}"></div>
+          <div class="summary-bar {{S3_CLASS}}"></div>
+        </div>
+        <span class="summary-label">自我</span>
+      </div>
+      <div class="summary-group">
+        <div class="summary-bars">
+          <div class="summary-bar {{E1_CLASS}}"></div>
+          <div class="summary-bar {{E2_CLASS}}"></div>
+          <div class="summary-bar {{E3_CLASS}}"></div>
+        </div>
+        <span class="summary-label">情感</span>
+      </div>
+      <div class="summary-group">
+        <div class="summary-bars">
+          <div class="summary-bar {{A1_CLASS}}"></div>
+          <div class="summary-bar {{A2_CLASS}}"></div>
+          <div class="summary-bar {{A3_CLASS}}"></div>
+        </div>
+        <span class="summary-label">态度</span>
+      </div>
+      <div class="summary-group">
+        <div class="summary-bars">
+          <div class="summary-bar {{AC1_CLASS}}"></div>
+          <div class="summary-bar {{AC2_CLASS}}"></div>
+          <div class="summary-bar {{AC3_CLASS}}"></div>
+        </div>
+        <span class="summary-label">行动</span>
+      </div>
+      <div class="summary-group">
+        <div class="summary-bars">
+          <div class="summary-bar {{SO1_CLASS}}"></div>
+          <div class="summary-bar {{SO2_CLASS}}"></div>
+          <div class="summary-bar {{SO3_CLASS}}"></div>
+        </div>
+        <span class="summary-label">社交</span>
+      </div>
+    </div>
+
+    <!-- ── Self Model ── -->
+    <div class="model-group">
+      <div class="model-title">自我</div>
+      <div class="dim-row">
+        <span class="dim-label">自尊自信</span>
+        <div class="dim-track"><div class="dim-fill {{S1_CLASS}}"></div></div>
+        <span class="dim-level {{S1_CLASS}}">{{S1}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">自我清晰度</span>
+        <div class="dim-track"><div class="dim-fill {{S2_CLASS}}"></div></div>
+        <span class="dim-level {{S2_CLASS}}">{{S2}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">核心价值</span>
+        <div class="dim-track"><div class="dim-fill {{S3_CLASS}}"></div></div>
+        <span class="dim-level {{S3_CLASS}}">{{S3}}</span>
+      </div>
+    </div>
+
+    <!-- ── Emotion Model ── -->
+    <div class="model-group">
+      <div class="model-title">情感</div>
+      <div class="dim-row">
+        <span class="dim-label">依恋安全感</span>
+        <div class="dim-track"><div class="dim-fill {{E1_CLASS}}"></div></div>
+        <span class="dim-level {{E1_CLASS}}">{{E1}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">情感投入度</span>
+        <div class="dim-track"><div class="dim-fill {{E2_CLASS}}"></div></div>
+        <span class="dim-level {{E2_CLASS}}">{{E2}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">边界与依赖</span>
+        <div class="dim-track"><div class="dim-fill {{E3_CLASS}}"></div></div>
+        <span class="dim-level {{E3_CLASS}}">{{E3}}</span>
+      </div>
+    </div>
+
+    <!-- ── Attitude Model ── -->
+    <div class="model-group">
+      <div class="model-title">态度</div>
+      <div class="dim-row">
+        <span class="dim-label">世界观倾向</span>
+        <div class="dim-track"><div class="dim-fill {{A1_CLASS}}"></div></div>
+        <span class="dim-level {{A1_CLASS}}">{{A1}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">规则与灵活度</span>
+        <div class="dim-track"><div class="dim-fill {{A2_CLASS}}"></div></div>
+        <span class="dim-level {{A2_CLASS}}">{{A2}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">人生意义感</span>
+        <div class="dim-track"><div class="dim-fill {{A3_CLASS}}"></div></div>
+        <span class="dim-level {{A3_CLASS}}">{{A3}}</span>
+      </div>
+    </div>
+
+    <!-- ── Action Drive Model ── -->
+    <div class="model-group">
+      <div class="model-title">行动</div>
+      <div class="dim-row">
+        <span class="dim-label">动机导向</span>
+        <div class="dim-track"><div class="dim-fill {{AC1_CLASS}}"></div></div>
+        <span class="dim-level {{AC1_CLASS}}">{{AC1}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">决策风格</span>
+        <div class="dim-track"><div class="dim-fill {{AC2_CLASS}}"></div></div>
+        <span class="dim-level {{AC2_CLASS}}">{{AC2}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">执行模式</span>
+        <div class="dim-track"><div class="dim-fill {{AC3_CLASS}}"></div></div>
+        <span class="dim-level {{AC3_CLASS}}">{{AC3}}</span>
+      </div>
+    </div>
+
+    <!-- ── Social Model ── -->
+    <div class="model-group">
+      <div class="model-title">社交</div>
+      <div class="dim-row">
+        <span class="dim-label">社交主动性</span>
+        <div class="dim-track"><div class="dim-fill {{SO1_CLASS}}"></div></div>
+        <span class="dim-level {{SO1_CLASS}}">{{SO1}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">人际边界感</span>
+        <div class="dim-track"><div class="dim-fill {{SO2_CLASS}}"></div></div>
+        <span class="dim-level {{SO2_CLASS}}">{{SO2}}</span>
+      </div>
+      <div class="dim-row">
+        <span class="dim-label">表达与真实度</span>
+        <div class="dim-track"><div class="dim-fill {{SO3_CLASS}}"></div></div>
+        <span class="dim-level {{SO3_CLASS}}">{{SO3}}</span>
+      </div>
+    </div>
+
+    <!-- ── TOP 3 ── -->
+    <div class="top-section">
+      <div class="section-title">🏆 最接近的人格 TOP 3</div>
+      <ul class="top-list">
+        <li class="top-item current">
+          <span class="top-rank r1">1</span>
+          <div class="top-info">
+            <span class="top-code">{{TOP1_CODE}}</span>
+            <span class="top-name">{{TOP1_NAME}}</span>
+          </div>
+          <span class="top-pct">{{TOP1_PCT}}%</span>
+        </li>
+        <li class="top-item">
+          <span class="top-rank r2">2</span>
+          <div class="top-info">
+            <span class="top-code">{{TOP2_CODE}}</span>
+            <span class="top-name">{{TOP2_NAME}}</span>
+          </div>
+          <span class="top-pct">{{TOP2_PCT}}%</span>
+        </li>
+        <li class="top-item">
+          <span class="top-rank r3">3</span>
+          <div class="top-info">
+            <span class="top-code">{{TOP3_CODE}}</span>
+            <span class="top-name">{{TOP3_NAME}}</span>
+          </div>
+          <span class="top-pct">{{TOP3_PCT}}%</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ── Guide ── -->
+    <div class="guide-section">
+      <div class="guide-card">
+        <div class="guide-title">🧠 想测测你的赛博人格？</div>
+        <div class="guide-desc">SBTI 测试通过 AI Agent 完成，你需要先安装 nexu 客户端，再给你的 Bot 装上这个 Skill。</div>
+        <ul class="guide-steps">
+          <li class="guide-step">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <div class="step-label">下载 nexu 客户端</div>
+              <div class="step-hint">可一键安装的开源 OpenClaw 桌面客户端</div>
+              <a class="step-link" href="https://github.com/nexu-io/nexu" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.744 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                前往 GitHub 下载
+              </a>
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <div class="step-label">安装 SBTI Skill</div>
+              <div class="step-hint">打开 nexu，对你的 Bot 说：</div>
+              <div class="step-code" onclick="copySkill(this)">帮我安装这个 skill：https://github.com/nexu-io/sbti-skill</div>
+            </div>
+          </li>
+          <li class="guide-step">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <div class="step-label">开始测试</div>
+              <div class="step-hint">安装完成后，对你的 Bot 说「做一个 SBTI 测试」就可以开始了！测完后还能生成你自己的分享页。</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Share ── -->
+    <div class="cta">
+      <div class="share-row">
+        <button class="share-btn" onclick="copyLink()">🔗 复制链接</button>
+        <button class="share-btn" onclick="shareX()">𝕏 分享</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <p>由 <a href="https://github.com/nexu-io/nexu" target="_blank">nexu</a> 驱动 ·
+       <a href="https://github.com/nexu-io/sbti-skill" target="_blank">sbti-skill</a> ·
+       原版测试 <a href="https://sbti.watcha.cn/" target="_blank">sbti.watcha.cn</a></p>
+  </div>
+
+</div>
+
+<script>
+function shareX() {
+  var t = encodeURIComponent('我的 SBTI 赛博人格是【{{PERSONALITY_CODE}}】{{PERSONALITY_NAME}}！匹配度 {{MATCH_PERCENT}}% 🧠 来测测你的 →');
+  var u = encodeURIComponent(location.href);
+  window.open('https://twitter.com/intent/tweet?text=' + t + '&url=' + u, '_blank');
+}
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(function() {
+    var btn = event.target;
+    btn.textContent = '✅ 已复制';
+    setTimeout(function() { btn.textContent = '🔗 复制链接'; }, 1800);
+  });
+}
+function copySkill(el) {
+  navigator.clipboard.writeText(el.textContent).then(function() {
+    var orig = el.textContent;
+    el.textContent = '✅ 已复制到剪贴板';
+    setTimeout(function() { el.textContent = orig; }, 1800);
+  });
+}
+(function() {
+  var data = [{{RADAR_S}}, {{RADAR_E}}, {{RADAR_A}}, {{RADAR_AC}}, {{RADAR_SO}}];
+  var labels = ['自我', '情感', '态度', '行动', '社交'];
+  var svg = document.getElementById('radarChart');
+  if (!svg) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var cx = 150, cy = 125, R = 95;
+  function pt(i, s) {
+    var a = Math.PI * 2 * i / 5 - Math.PI / 2;
+    return [cx + R * s * Math.cos(a), cy + R * s * Math.sin(a)];
+  }
+  function mkPoly(pts, fill, stroke, sw) {
+    var el = document.createElementNS(ns, 'polygon');
+    el.setAttribute('points', pts.map(function(p) { return p.join(','); }).join(' '));
+    el.setAttribute('fill', fill);
+    el.setAttribute('stroke', stroke);
+    el.setAttribute('stroke-width', sw);
+    svg.appendChild(el);
+  }
+  [0.33, 0.66, 1.0].forEach(function(s) {
+    var pts = [];
+    for (var i = 0; i < 5; i++) pts.push(pt(i, s));
+    mkPoly(pts, 'none', '#dbe8dd', '1');
+  });
+  for (var i = 0; i < 5; i++) {
+    var p = pt(i, 1);
+    var line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+    line.setAttribute('x2', p[0]); line.setAttribute('y2', p[1]);
+    line.setAttribute('stroke', '#dbe8dd'); line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+  }
+  var dataPts = [];
+  for (var i = 0; i < 5; i++) dataPts.push(pt(i, data[i] / 100));
+  mkPoly(dataPts, 'rgba(16,185,129,0.15)', '#10b981', '2');
+  dataPts.forEach(function(p) {
+    var c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]);
+    c.setAttribute('r', '4'); c.setAttribute('fill', '#10b981');
+    svg.appendChild(c);
+  });
+  for (var i = 0; i < 5; i++) {
+    var p = pt(i, 1.22);
+    var t = document.createElementNS(ns, 'text');
+    t.setAttribute('x', p[0]); t.setAttribute('y', p[1]);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'middle');
+    t.setAttribute('font-family', 'Inter, Noto Sans SC, sans-serif');
+    t.setAttribute('font-size', '12'); t.setAttribute('font-weight', '600');
+    t.setAttribute('fill', '#3a4a3e');
+    t.textContent = labels[i] + ' ' + data[i];
+    svg.appendChild(t);
+  }
+})();
+</script>
+</body>
+</html>
